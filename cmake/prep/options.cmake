@@ -8,6 +8,7 @@ set(SUNSHINE_PUBLISHER_ISSUE_URL "https://app.lizardbyte.dev/support"
         If you provide a modified version of Sunshine, we kindly request that you use your own url.")
 
 option(BUILD_DOCS "Build documentation" ON)
+option(SUNSHINE_DESKTOP_PACKAGE "Install the X11 remote desktop service profile." OFF)
 option(BUILD_TESTS "Build tests" ON)
 option(NPM_OFFLINE "Use offline npm packages. You must ensure packages are in your npm cache." OFF)
 

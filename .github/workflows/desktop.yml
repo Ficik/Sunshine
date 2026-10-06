@@ -1,0 +1,80 @@
+name: Desktop Ubuntu packages
+on:
+  push:
+    branches: [desktop, 'upgrade/**']
+    tags: ['desktop-v*']
+  pull_request:
+    branches: [desktop]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: desktop-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        ubuntu: ['22.04', '24.04']
+    runs-on: ubuntu-${{ matrix.ubuntu }}
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '26.4.0'
+          cache: npm
+      - name: Set package version
+        env:
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          version=$(cat packaging/desktop/VERSION)
+          if [[ "$REF_TYPE" == tag ]]; then
+            test "$REF_NAME" = "desktop-v${version}"
+            echo "DESKTOP_VERSION=${version}+desktop" >> "$GITHUB_ENV"
+          else
+            echo "DESKTOP_VERSION=${version}~dev.${GITHUB_RUN_NUMBER}+desktop.g${GITHUB_SHA:0:8}" >> "$GITHUB_ENV"
+          fi
+      - name: Build and test clipboard
+        run: bash scripts/build-desktop-deb.sh
+      - name: Install in stock Ubuntu
+        run: |
+          docker run --rm -v "$PWD/artifacts:/packages:ro" \
+            -v "$PWD/scripts/test-desktop-deb.sh:/test.sh:ro" \
+            ubuntu:${{ matrix.ubuntu }} bash /test.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sunshine-ubuntu-${{ matrix.ubuntu }}-amd64
+          path: artifacts/
+          if-no-files-found: error
+          retention-days: 30
+  release:
+    if: startsWith(github.ref, 'refs/tags/desktop-v')
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: sunshine-ubuntu-*-amd64
+          path: packages
+      - name: Publish verified packages
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          mkdir release
+          cp packages/*/*.deb release/
+          cp packages/sunshine-ubuntu-22.04-amd64/{SOURCE_COMMIT,SUBMODULES.txt,VERSION} release/
+          cp DESKTOP.md release/INSTALL.md
+          (cd release && sha256sum ./*.deb > SHA256SUMS)
+          gh release create "$RELEASE_TAG" release/* \
+            --verify-tag --title "Sunshine Desktop ${RELEASE_TAG#desktop-v}" \
+            --notes-file packaging/desktop/RELEASE_NOTES.md

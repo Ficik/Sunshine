@@ -151,6 +151,11 @@ endif()
 
 # This should automatically figure out dependencies on packages
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+if(SUNSHINE_DESKTOP_PACKAGE)
+    string(APPEND CPACK_DEBIAN_PACKAGE_DEPENDS ", xclip")
+    install(FILES "${CMAKE_SOURCE_DIR}/packaging/desktop/desktop.conf"
+            DESTINATION "lib/systemd/user/app-${PROJECT_FQDN}.service.d")
+endif()
 set(CPACK_RPM_PACKAGE_AUTOREQ ON)
 
 # application icon
