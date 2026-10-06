@@ -20,11 +20,11 @@ jobs:
     runs-on: ubuntu-${{ matrix.ubuntu }}
     timeout-minutes: 90
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7.0.1
         with:
           submodules: recursive
-          fetch-depth: 0
-      - uses: actions/setup-node@v4
+          fetch-depth: 1
+      - uses: actions/setup-node@v7.0.0
         with:
           node-version: '26.4.0'
           cache: npm
@@ -41,13 +41,24 @@ jobs:
             echo "DESKTOP_VERSION=${version}~dev.${GITHUB_RUN_NUMBER}+desktop.g${GITHUB_SHA:0:8}" >> "$GITHUB_ENV"
           fi
       - name: Build and test clipboard
-        run: bash scripts/build-desktop-deb.sh
+        run: bash scripts/build-desktop-deb.sh 2>&1 | tee desktop-build.log
+      - name: Summarize build failure
+        if: failure()
+        run: |
+          python3 - <<'PYTHON'
+          from pathlib import Path
+          p = Path('desktop-build.log')
+          if p.exists():
+              tail = p.read_text(errors='replace')[-10000:]
+              message = tail.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+              print('::error title=Desktop build log::' + message)
+          PYTHON
       - name: Install in stock Ubuntu
         run: |
           docker run --rm -v "$PWD/artifacts:/packages:ro" \
             -v "$PWD/scripts/test-desktop-deb.sh:/test.sh:ro" \
             ubuntu:${{ matrix.ubuntu }} bash /test.sh
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7.0.1
         with:
           name: sunshine-ubuntu-${{ matrix.ubuntu }}-amd64
           path: artifacts/
@@ -60,8 +71,8 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/download-artifact@v8.0.1
         with:
           pattern: sunshine-ubuntu-*-amd64
           path: packages
