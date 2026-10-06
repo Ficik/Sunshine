@@ -13,10 +13,11 @@ Check the downloaded package's checksum against SHA256SUMS, then:
 ```sh
 sudo apt install ./sunshine_*.deb
 systemctl --user daemon-reload
-systemctl --user enable --now sunshine.service
+systemctl --user enable --now app-dev.lizardbyte.app.Sunshine.service
 ```
 
 Run these user-service commands as the desktop user, in an X11 graphical session.
+Enabling the full service name creates the `sunshine.service` alias.
 Use the existing Sunshine web interface on HTTPS port 47990 to set credentials
 and pair each client. No credentials or paired devices are included in packages.
 Firewall policy remains an operator decision; the package does not expose ports.

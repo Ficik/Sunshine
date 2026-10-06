@@ -9,5 +9,9 @@ Download the package matching your Ubuntu release, verify SHA256SUMS, and instal
 with `sudo apt install ./sunshine_*.deb`. See the attached INSTALL.md for startup,
 pairing, configuration preservation, and upgrade instructions.
 
+For first startup, run `systemctl --user daemon-reload` followed by
+`systemctl --user enable --now app-dev.lizardbyte.app.Sunshine.service` as the
+desktop user. This release corrects the initial service-enablement instructions.
+
 Source is the immutable release tag. SOURCE_COMMIT and SUBMODULES.txt record the
 exact source revisions. These are community desktop builds maintained by Ficik.
