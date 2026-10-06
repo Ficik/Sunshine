@@ -22,6 +22,7 @@
 #include <openssl/sha.h>
 
 // local includes
+#include "clipboard.h"
 #include "config.h"
 #include "crypto.h"
 #include "display_device.h"
@@ -311,6 +312,7 @@ namespace proc {
     // calls to bp::wait() and platf::process_group_running() which both
     // invoke waitpid() under the hood.
     auto reaper = util::fail_guard([]() {
+      std::lock_guard lock {clipboard::child_reaper_mutex()};
       while (waitpid(-1, nullptr, WNOHANG) > 0);
     });
 #endif

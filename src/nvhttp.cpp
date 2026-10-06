@@ -20,9 +20,11 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
+#include <nlohmann/json.hpp>
 #include <Simple-Web-Server/server_http.hpp>
 
 // local includes
+#include "clipboard.h"
 #include "config.h"
 #include "display_device.h"
 #include "file_handler.h"
@@ -1711,6 +1713,38 @@ namespace nvhttp {
     };
     https_server.resource["^/cancel$"]["GET"] = cancel;
 
+    // This endpoint exists only on the paired-client HTTPS listener. Never log
+    // requests or response bodies here: clipboard contents can be sensitive.
+    auto clipboard_request = [](resp_https_t response, req_https_t request) {
+      SimpleWeb::CaseInsensitiveMultimap headers {{"Content-Type", "application/json"}, {"Cache-Control", "no-store"}};
+      response->close_connection_after_response = true;
+      if (!std::getenv("SUNSHINE_CLIPBOARD") || std::string_view(std::getenv("SUNSHINE_CLIPBOARD")) != "1" || config::video.capture != "x11") {
+        response->write(SimpleWeb::StatusCode::client_error_forbidden, "{\"error\":\"Clipboard is disabled\"}", headers);
+        return;
+      }
+      try {
+        if (request->method == "POST") {
+          if (request->content.size() > clipboard::MAX_BYTES * 6 + 128) {
+            response->write(SimpleWeb::StatusCode::client_error_payload_too_large, "{}", headers);
+            return;
+          }
+          auto data = nlohmann::json::parse(request->content.string());
+          clipboard::transfer(true, data.at("text").get<std::string>());
+          response->write(SimpleWeb::StatusCode::success_ok, "{\"ok\":true}", headers);
+        } else {
+          auto data = nlohmann::json {{"text", clipboard::transfer(false)}};
+          response->write(SimpleWeb::StatusCode::success_ok, data.dump(), headers);
+        }
+      } catch (const clipboard::no_text &) {
+        response->write(SimpleWeb::StatusCode::success_ok, "{\"text\":null}", headers);
+      } catch (const std::exception &) {
+        response->write(SimpleWeb::StatusCode::client_error_bad_request, "{\"error\":\"Clipboard unavailable or invalid UTF-8 text (maximum 1 MiB)\"}", headers);
+      }
+    };
+    https_server.resource["^/clipboard$"]["GET"] = clipboard_request;
+    https_server.resource["^/clipboard$"]["POST"] = clipboard_request;
+
+    https_server.config.max_request_streambuf_size = clipboard::MAX_BYTES * 6 + 4096;
     https_server.config.reuse_address = true;
     https_server.config.address = net::get_bind_address(address_family);
     https_server.config.port = port_https;
