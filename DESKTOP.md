@@ -55,7 +55,7 @@ The workflow uses the repository's GITHUB_TOKEN; no personal release token is
 required. Enable Actions in your GitHub fork if GitHub has disabled fork workflows.
 
 Build inputs are committed lockfiles, pinned submodules, Node 26.4.0 and CMake
-3.31.8. GCC 14 comes from the Ubuntu toolchain build PPA; its C++ runtime is
+3.31.10. GCC 14 comes from the Ubuntu toolchain build PPA; its C++ runtime is
 linked statically so installed booths do not need that PPA. CI installs and runs
 the finished package in a fresh container with stock Ubuntu repositories.
 System build dependencies follow Ubuntu package updates, so builds are traceable

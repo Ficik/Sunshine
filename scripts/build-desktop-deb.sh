@@ -9,7 +9,7 @@ sudo_cmd=()
 if (( EUID != 0 )); then sudo_cmd=(sudo); fi
 export DEBIAN_FRONTEND=noninteractive
 "${sudo_cmd[@]}" apt-get update
-"${sudo_cmd[@]}" apt-get install -y --no-install-recommends software-properties-common ca-certificates
+"${sudo_cmd[@]}" apt-get install -y --no-install-recommends software-properties-common ca-certificates gnupg
 "${sudo_cmd[@]}" add-apt-repository -y ppa:ubuntu-toolchain-r/test
 "${sudo_cmd[@]}" apt-get update
 "${sudo_cmd[@]}" apt-get install -y --no-install-recommends \
@@ -22,7 +22,7 @@ export DEBIAN_FRONTEND=noninteractive
 
 tools_dir="${DESKTOP_TOOLS_DIR:-$PWD/cmake-build-desktop-tools}"
 python3 -m venv "$tools_dir"
-"$tools_dir/bin/pip" install --disable-pip-version-check cmake==3.31.8
+"$tools_dir/bin/pip" install --disable-pip-version-check cmake==3.31.10
 export PATH="$tools_dir/bin:$PATH"
 export CC=gcc-14 CXX=g++-14
 export BRANCH=desktop
