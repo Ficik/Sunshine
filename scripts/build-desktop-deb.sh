@@ -32,6 +32,8 @@ export DEBIAN_PACKAGE_RELEASE="0ubuntu${VERSION_ID}"
 build_dir="${DESKTOP_BUILD_DIR:-cmake-build-desktop}"
 cmake -S . -B "$build_dir" -G Ninja \
   -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr \
+  -DSUNSHINE_ASSETS_DIR=share/sunshine \
+  -DSUNSHINE_EXECUTABLE_PATH=/usr/bin/sunshine \
   -DCMAKE_EXE_LINKER_FLAGS='-static-libstdc++ -static-libgcc' \
   -DBUILD_DOCS=OFF -DBUILD_TESTS=OFF -DBUILD_WERROR=OFF \
   -DBOOST_USE_STATIC=ON -DSUNSHINE_ENABLE_TRAY=OFF \

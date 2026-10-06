@@ -6,6 +6,8 @@ apt-get update
 apt-get install -y --no-install-recommends /packages/*.deb
 test "$(dpkg-query -W -f='${Architecture}' sunshine)" = amd64
 command -v xclip
+test -f /usr/share/sunshine/web/index.html
+test -f /usr/share/sunshine/apps.json
 test -f /usr/lib/systemd/user/app-dev.lizardbyte.app.Sunshine.service.d/desktop.conf
 grep -Fx 'ExecStart=/usr/bin/sunshine capture=x11' \
   /usr/lib/systemd/user/app-dev.lizardbyte.app.Sunshine.service.d/desktop.conf
