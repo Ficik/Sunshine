@@ -5,7 +5,7 @@ This fork adds authenticated, bidirectional text clipboard support for
 The maintained branch is `desktop`. Upstream base:
 `11eb4fb4d04953ba9e821af29b50914b0577b994`.
 
-## Install on Ubuntu 22.04 or 24.04 (amd64)
+## Install on Ubuntu 22.04, 24.04 or 26.04 (amd64)
 
 Download the matching `.deb` and SHA256SUMS from this fork's GitHub Releases.
 Check the downloaded package's checksum against SHA256SUMS, then:
@@ -47,16 +47,17 @@ download these builds.
 
 ## Build and release
 
-The Desktop Ubuntu packages workflow builds separately on Ubuntu 22.04/24.04.
+The Desktop Ubuntu packages workflow builds separately on Ubuntu 22.04/24.04/26.04.
 Every push to `desktop` or `upgrade/**` publishes test packages as Actions
 artifacts. Release tags have the form `desktop-v2026.1006.1` and must match
-`packaging/desktop/VERSION`. Only after both platform jobs pass does CI publish
+`packaging/desktop/VERSION`. Only after all three platform jobs pass does CI publish
 a GitHub Release with `.deb` files, checksums, and source/submodule revisions.
 The workflow uses the repository's GITHUB_TOKEN; no personal release token is
 required. Enable Actions in your GitHub fork if GitHub has disabled fork workflows.
 
 Build inputs are committed lockfiles, pinned submodules, Node 26.4.0 and CMake
-3.31.10. GCC 14 comes from the Ubuntu toolchain build PPA; its C++ runtime is
+3.31.10. GCC 14 comes from Ubuntu's own repositories on 26.04 and the Ubuntu
+toolchain build PPA on 22.04/24.04; its C++ runtime is
 linked statically so installed booths do not need that PPA. CI installs and runs
 the finished package in a fresh container with stock Ubuntu repositories.
 System build dependencies follow Ubuntu package updates, so builds are traceable

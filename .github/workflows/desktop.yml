@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ubuntu: ['22.04', '24.04']
+        ubuntu: ['22.04', '24.04', '26.04']
     runs-on: ubuntu-${{ matrix.ubuntu }}
     timeout-minutes: 90
     steps:

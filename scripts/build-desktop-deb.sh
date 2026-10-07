@@ -3,15 +3,19 @@
 set -euo pipefail
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.."
 source /etc/os-release
-[[ "$ID" == ubuntu && "$VERSION_ID" =~ ^(22\.04|24\.04)$ ]]
+[[ "$ID" == ubuntu && "$VERSION_ID" =~ ^(22\.04|24\.04|26\.04)$ ]]
 [[ "$(dpkg --print-architecture)" == amd64 ]]
 sudo_cmd=()
 if (( EUID != 0 )); then sudo_cmd=(sudo); fi
 export DEBIAN_FRONTEND=noninteractive
 "${sudo_cmd[@]}" apt-get update
-"${sudo_cmd[@]}" apt-get install -y --no-install-recommends software-properties-common ca-certificates gnupg
-"${sudo_cmd[@]}" add-apt-repository -y ppa:ubuntu-toolchain-r/test
-"${sudo_cmd[@]}" apt-get update
+"${sudo_cmd[@]}" apt-get install -y --no-install-recommends ca-certificates
+# Resolute provides GCC 14 directly; older targets use the build-only PPA.
+if [[ "$VERSION_ID" != 26.04 ]]; then
+  "${sudo_cmd[@]}" apt-get install -y --no-install-recommends software-properties-common gnupg
+  "${sudo_cmd[@]}" add-apt-repository -y ppa:ubuntu-toolchain-r/test
+  "${sudo_cmd[@]}" apt-get update
+fi
 "${sudo_cmd[@]}" apt-get install -y --no-install-recommends \
   gcc-14 g++-14 ninja-build git curl pkg-config python3-venv python3-jinja2 \
   libssl-dev libcurl4-openssl-dev libcap-dev libdrm-dev libevdev-dev \
