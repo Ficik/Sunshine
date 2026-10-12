@@ -124,7 +124,6 @@ if(LIBVA_FOUND)
     set(_sunshine_system_va_include "${CMAKE_CURRENT_BINARY_DIR}/system-va-include")
     file(MAKE_DIRECTORY "${_sunshine_system_va_include}")
     file(CREATE_LINK "${LIBVA_INCLUDE_DIR}/va" "${_sunshine_system_va_include}/va" SYMBOLIC)
-    include_directories(BEFORE SYSTEM "${_sunshine_system_va_include}")
     list(APPEND PLATFORM_LIBRARIES ${LIBVA_LIBRARIES} ${LIBVA_DRM_LIBRARIES})
     list(APPEND PLATFORM_TARGET_FILES
             "${CMAKE_SOURCE_DIR}/src/platform/linux/vaapi.h"

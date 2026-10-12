@@ -221,6 +221,11 @@ include_directories(
         ${Boost_INCLUDE_DIRS}  # has to be the last, or we get runtime error on macOS ffmpeg encoder
 )
 
+if(_sunshine_system_va_include)
+    # Apply this after the bundled FFmpeg includes so system va/ headers win.
+    include_directories(BEFORE SYSTEM "${_sunshine_system_va_include}")
+endif()
+
 if(NOT APPLE)
     include_directories(BEFORE SYSTEM "${NV_CODEC_HEADERS_13_1_INCLUDE_DIR}")
 endif()
