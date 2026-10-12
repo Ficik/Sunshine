@@ -218,6 +218,12 @@ if(_sunshine_ffmpeg_relocatable GREATER_EQUAL 0)
                 PkgConfig::SUNSHINE_BUNDLED_FFMPEG INTERFACE_LINK_LIBRARIES)
         list(FILTER _sunshine_ffmpeg_link_libraries EXCLUDE
                 REGEX "(^|/)(lib)?(stdc\\+\\+|gcc_s)(\\.[^/]*)?$")
+        # libva-drm creates private display contexts owned by the system libva.
+        # Mixing those contexts with the newer libva.a bundled by FFmpeg can
+        # corrupt memory during vaInitialize(). Keep both on the same runtime.
+        find_library(_sunshine_system_libva NAMES libva.so REQUIRED)
+        list(TRANSFORM _sunshine_ffmpeg_link_libraries REPLACE
+                "^(.*/)?libva\\.a$" "${_sunshine_system_libva}")
         set_property(TARGET PkgConfig::SUNSHINE_BUNDLED_FFMPEG PROPERTY
                 INTERFACE_LINK_LIBRARIES "${_sunshine_ffmpeg_link_libraries}")
     endif()

@@ -51,6 +51,7 @@ cmake -S . -B "$build_dir" -G Ninja \
   -DSUNSHINE_PUBLISHER_WEBSITE=https://github.com/Ficik/Sunshine \
   -DSUNSHINE_PUBLISHER_ISSUE_URL=https://github.com/Ficik/Sunshine/issues
 cmake --build "$build_dir" --parallel "${JOBS:-2}"
+bash scripts/test-desktop-vaapi-linkage.sh "$build_dir/sunshine"
 
 # Exercise the actual clipboard helper in a private X server, including 1 MiB
 # INCR transfers and contention with the process reaper. No physical GPU needed.
