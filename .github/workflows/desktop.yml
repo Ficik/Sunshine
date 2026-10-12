@@ -42,22 +42,23 @@ jobs:
           fi
       - name: Build and test clipboard
         run: bash scripts/build-desktop-deb.sh 2>&1 | tee desktop-build.log
-      - name: Summarize build failure
-        if: failure()
-        run: |
-          python3 - <<'PYTHON'
-          from pathlib import Path
-          p = Path('desktop-build.log')
-          if p.exists():
-              tail = p.read_text(errors='replace')[-10000:]
-              message = tail.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
-              print('::error title=Desktop build log::' + message)
-          PYTHON
       - name: Install in stock Ubuntu
         run: |
           docker run --rm -v "$PWD/artifacts:/packages:ro" \
             -v "$PWD/scripts/test-desktop-deb.sh:/test.sh:ro" \
-            ubuntu:${{ matrix.ubuntu }} bash /test.sh
+            ubuntu:${{ matrix.ubuntu }} bash /test.sh 2>&1 | tee desktop-install.log
+      - name: Summarize package failure
+        if: failure()
+        run: |
+          python3 - <<'PYTHON'
+          from pathlib import Path
+          for name in ('desktop-build.log', 'desktop-install.log'):
+              p = Path(name)
+              if p.exists():
+                  tail = p.read_text(errors='replace')[-10000:]
+                  message = tail.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+                  print(f'::error title={name}::' + message)
+          PYTHON
       - uses: actions/upload-artifact@v7.0.1
         with:
           name: sunshine-ubuntu-${{ matrix.ubuntu }}-amd64
